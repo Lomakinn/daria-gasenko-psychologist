@@ -158,8 +158,8 @@ textarea {
 
 .hero-overlay {
   background:
-    linear-gradient(90deg, rgba(9, 34, 44, 0.94) 0%, rgba(18, 56, 72, 0.82) 44%, rgba(18, 56, 72, 0.18) 100%),
-    linear-gradient(0deg, rgba(9, 34, 44, 0.38), rgba(9, 34, 44, 0.02));
+    linear-gradient(90deg, rgba(9, 34, 44, 0.86) 0%, rgba(18, 56, 72, 0.7) 44%, rgba(18, 56, 72, 0.1) 100%),
+    linear-gradient(0deg, rgba(9, 34, 44, 0.28), rgba(9, 34, 44, 0));
 }
 
 .hero-content {
@@ -951,7 +951,7 @@ details p {
   }
 
   .hero-overlay {
-    background: rgba(9, 34, 44, 0.76);
+    background: rgba(9, 34, 44, 0.66);
   }
 
   .hero-content {

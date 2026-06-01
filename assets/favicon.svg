@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Дарья Гасенко">
+  <rect width="64" height="64" rx="16" fill="#123848"/>
+  <circle cx="45" cy="19" r="11" fill="#6f927d"/>
+  <path fill="#f6efe7" d="M18 45V18h12c8.4 0 14.2 5.3 14.2 13.4S38.4 45 30 45H18Zm7.5-6.6h4.1c4.3 0 7.1-2.8 7.1-7s-2.8-6.8-7.1-6.8h-4.1v13.8Z"/>
+  <path fill="#bf6544" d="M44.2 45 53 19h6.5L50.6 45h-6.4Z"/>
+</svg>
