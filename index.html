@@ -62,15 +62,6 @@
         </div>
       </section>
 
-      <section class="section intro-note">
-        <div class="container narrow">
-          <p>
-            <em>[Для дизайнера: hero строится на мягком портрете специалиста справа, с затемненной океанической подложкой
-            слева под текст. Основная CTA-кнопка терракотовая, вторичная прозрачная с белой рамкой.]</em>
-          </p>
-        </div>
-      </section>
-
       <section class="section" id="help" aria-labelledby="help-title">
         <div class="container">
           <div class="section-heading">
@@ -113,7 +104,6 @@
               <p>Если прежние цели больше не дают опоры, терапия помогает спокойно пересобрать ориентиры без резких решений из тревоги.</p>
             </article>
           </div>
-          <p class="designer-note"><em>[Раздел лучше делать сеткой из 6 спокойных карточек без ярких иллюстраций: номер, короткий заголовок, один эмпатичный абзац.]</em></p>
         </div>
       </section>
 
@@ -166,9 +156,6 @@
             </div>
           </aside>
         </div>
-        <div class="container">
-          <p class="designer-note"><em>[Рядом с текстом можно расположить спокойный портрет или фрагмент кабинета. Визуальный акцент — на дипломах и маркерах безопасности, без перегруза.]</em></p>
-        </div>
       </section>
 
       <section class="section" id="process" aria-labelledby="process-title">
@@ -199,7 +186,6 @@
               <p>На встречах вы учитесь замечать свои реакции, снижать напряжение и постепенно стабилизировать состояние.</p>
             </article>
           </div>
-          <p class="designer-note"><em>[Шаги расположить горизонтально на десктопе и вертикально на мобильных. Номера сделать в приглушенном изумрудном круге.]</em></p>
         </div>
       </section>
 
@@ -210,31 +196,39 @@
             <h2 id="reviews-title">Анонимные истории клиентов</h2>
             <p>Имена изменены, детали обезличены. В терапии важен результат, но еще важнее — право человека на приватность.</p>
           </div>
-          <div class="review-grid" data-reviews>
-            <blockquote data-base-review>
-              <p>
-                "Я пришла с ощущением, что больше не могу работать и нормально спать. Через несколько месяцев я научилась
-                замечать перегруз раньше, стала спокойнее говорить о границах и вернулась к рабочему ритму без постоянного
-                внутреннего срыва."
-              </p>
-              <cite>М., 34 года</cite>
-            </blockquote>
-            <blockquote data-base-review>
-              <p>
-                "Мы с партнером много лет спорили по одним и тем же темам. На сессиях я увидел свою часть в этом круге и
-                перестал защищаться автоматически. Дома стало больше ясности и меньше взаимных обвинений."
-              </p>
-              <cite>А., 41 год</cite>
-            </blockquote>
-            <blockquote data-base-review>
-              <p>
-                "Тревога не исчезла за один день, но она перестала управлять моими решениями. Я научилась отделять реальную
-                опасность от привычного страха и впервые спокойно сказала "нет" без чувства вины."
-              </p>
-              <cite>Е., 29 лет</cite>
-            </blockquote>
+          <div class="review-carousel" data-review-carousel>
+            <div class="review-viewport">
+              <div class="review-track" data-reviews>
+                <blockquote data-base-review>
+                  <p>
+                    "Я пришла с ощущением, что больше не могу работать и нормально спать. Через несколько месяцев я научилась
+                    замечать перегруз раньше, стала спокойнее говорить о границах и вернулась к рабочему ритму без постоянного
+                    внутреннего срыва."
+                  </p>
+                  <cite>М., 34 года</cite>
+                </blockquote>
+                <blockquote data-base-review>
+                  <p>
+                    "Мы с партнером много лет спорили по одним и тем же темам. На сессиях я увидел свою часть в этом круге и
+                    перестал защищаться автоматически. Дома стало больше ясности и меньше взаимных обвинений."
+                  </p>
+                  <cite>А., 41 год</cite>
+                </blockquote>
+                <blockquote data-base-review>
+                  <p>
+                    "Тревога не исчезла за один день, но она перестала управлять моими решениями. Я научилась отделять реальную
+                    опасность от привычного страха и впервые спокойно сказала "нет" без чувства вины."
+                  </p>
+                  <cite>Е., 29 лет</cite>
+                </blockquote>
+              </div>
+            </div>
+            <div class="review-controls" aria-label="Управление отзывами">
+              <button class="carousel-button" type="button" data-review-prev aria-label="Предыдущие отзывы">‹</button>
+              <span class="review-counter" data-review-counter>1 / 1</span>
+              <button class="carousel-button" type="button" data-review-next aria-label="Следующие отзывы">›</button>
+            </div>
           </div>
-          <p class="designer-note light-note"><em>[Отзывы показывать как три отдельные карточки на темном океаническом фоне. Не добавлять фотографии клиентов.]</em></p>
         </div>
       </section>
 
@@ -245,23 +239,25 @@
             <h2 id="blog-title">Статьи, которые помогают лучше понимать себя</h2>
           </div>
           <div class="blog-grid">
-            <article class="blog-card">
+            <a class="blog-card" href="articles/burnout.html">
               <p class="tag">Карьера</p>
               <h3>Как отличить усталость от выгорания и не довести себя до полного истощения</h3>
               <p>Разбираем сигналы, которые часто игнорируют сильные и ответственные люди. В статье есть мягкий чек-лист для оценки нагрузки без самокритики.</p>
-            </article>
-            <article class="blog-card">
+              <span class="read-more">Читать статью</span>
+            </a>
+            <a class="blog-card" href="articles/relationships.html">
               <p class="tag">Отношения</p>
               <h3>Почему разговоры с близкими заходят в тупик, даже когда оба хотят договориться</h3>
               <p>Объясняю, как защитные реакции превращают диалог в повторяющийся сценарий. Показываю, с чего начать выход из этого круга.</p>
-            </article>
-            <article class="blog-card">
+              <span class="read-more">Читать статью</span>
+            </a>
+            <a class="blog-card" href="articles/anxiety.html">
               <p class="tag">Тревога</p>
               <h3>Что делать, когда тревога выглядит логичной, но забирает слишком много сил</h3>
               <p>Говорим о разнице между заботой о будущем и тревожным контролем. Внутри — несколько техник, которые помогают вернуть внимание в настоящий момент.</p>
-            </article>
+              <span class="read-more">Читать статью</span>
+            </a>
           </div>
-          <p class="designer-note"><em>[Карточки блога должны быть компактными, с цветовой меткой темы и ссылкой "Читать", если раздел будет развиваться в полноценный блог.]</em></p>
         </div>
       </section>
 
@@ -308,9 +304,6 @@
               </p>
             </details>
           </div>
-        </div>
-        <div class="container">
-          <p class="designer-note"><em>[FAQ оформить аккордеоном. Первый вопрос можно раскрыть по умолчанию на десктопе, но не перегружать мобильный экран.]</em></p>
         </div>
       </section>
 
@@ -363,9 +356,6 @@
             <p class="form-note">Нажимая кнопку, вы соглашаетесь на обработку персональных данных. Переписка конфиденциальна.</p>
           </form>
         </div>
-        <div class="container">
-          <p class="designer-note"><em>[Форма должна выглядеть спокойно и надежно: минимум полей, крупные зоны ввода, заметная терракотовая кнопка.]</em></p>
-        </div>
       </section>
     </main>
 
@@ -397,16 +387,77 @@
     </footer>
 
     <dialog class="test-dialog" data-test-dialog>
-      <form method="dialog">
-        <button class="dialog-close" value="close" aria-label="Закрыть">×</button>
-        <p class="eyebrow">Мини-тест</p>
-        <h2>Быстрая проверка уровня тревожной нагрузки</h2>
-        <p>Отметьте пункты, которые повторяются последние две недели. Это не диагноз, а повод внимательнее отнестись к себе.</p>
-        <label><input type="checkbox" /> Сложно расслабиться даже в свободное время</label>
-        <label><input type="checkbox" /> Тело часто напряжено без очевидной причины</label>
-        <label><input type="checkbox" /> Мысли о будущем мешают спать или работать</label>
-        <label><input type="checkbox" /> Вы избегаете решений из страха ошибиться</label>
-        <button class="button button-primary" value="close">Обсудить результаты на знакомстве</button>
+      <form class="gad-form" data-gad-form>
+        <button class="dialog-close" type="button" data-close-test aria-label="Закрыть">×</button>
+        <p class="eyebrow">GAD-7 · 2-4 минуты</p>
+        <h2>Короткий тест на уровень тревожности</h2>
+        <p>
+          За последние 2 недели как часто вас беспокоили следующие состояния? Это скрининг, а не диагноз:
+          результат помогает понять, стоит ли обсудить тревогу со специалистом.
+        </p>
+
+        <div class="gad-scale" aria-hidden="true">
+          <span>Совсем нет</span>
+          <span>Несколько дней</span>
+          <span>Более половины дней</span>
+          <span>Почти каждый день</span>
+        </div>
+
+        <fieldset class="gad-question">
+          <legend>1. Вы нервничали, тревожились или были на пределе?</legend>
+          <label><input type="radio" name="gad1" value="0" required /> Совсем нет</label>
+          <label><input type="radio" name="gad1" value="1" /> Несколько дней</label>
+          <label><input type="radio" name="gad1" value="2" /> Более половины дней</label>
+          <label><input type="radio" name="gad1" value="3" /> Почти каждый день</label>
+        </fieldset>
+        <fieldset class="gad-question">
+          <legend>2. Вы не могли остановить или контролировать беспокойство?</legend>
+          <label><input type="radio" name="gad2" value="0" required /> Совсем нет</label>
+          <label><input type="radio" name="gad2" value="1" /> Несколько дней</label>
+          <label><input type="radio" name="gad2" value="2" /> Более половины дней</label>
+          <label><input type="radio" name="gad2" value="3" /> Почти каждый день</label>
+        </fieldset>
+        <fieldset class="gad-question">
+          <legend>3. Вы слишком много беспокоились о разных вещах?</legend>
+          <label><input type="radio" name="gad3" value="0" required /> Совсем нет</label>
+          <label><input type="radio" name="gad3" value="1" /> Несколько дней</label>
+          <label><input type="radio" name="gad3" value="2" /> Более половины дней</label>
+          <label><input type="radio" name="gad3" value="3" /> Почти каждый день</label>
+        </fieldset>
+        <fieldset class="gad-question">
+          <legend>4. Вам было трудно расслабиться?</legend>
+          <label><input type="radio" name="gad4" value="0" required /> Совсем нет</label>
+          <label><input type="radio" name="gad4" value="1" /> Несколько дней</label>
+          <label><input type="radio" name="gad4" value="2" /> Более половины дней</label>
+          <label><input type="radio" name="gad4" value="3" /> Почти каждый день</label>
+        </fieldset>
+        <fieldset class="gad-question">
+          <legend>5. Вы были настолько беспокойны, что было трудно усидеть на месте?</legend>
+          <label><input type="radio" name="gad5" value="0" required /> Совсем нет</label>
+          <label><input type="radio" name="gad5" value="1" /> Несколько дней</label>
+          <label><input type="radio" name="gad5" value="2" /> Более половины дней</label>
+          <label><input type="radio" name="gad5" value="3" /> Почти каждый день</label>
+        </fieldset>
+        <fieldset class="gad-question">
+          <legend>6. Вы легко раздражались или становились вспыльчивее обычного?</legend>
+          <label><input type="radio" name="gad6" value="0" required /> Совсем нет</label>
+          <label><input type="radio" name="gad6" value="1" /> Несколько дней</label>
+          <label><input type="radio" name="gad6" value="2" /> Более половины дней</label>
+          <label><input type="radio" name="gad6" value="3" /> Почти каждый день</label>
+        </fieldset>
+        <fieldset class="gad-question">
+          <legend>7. Вы боялись, что может случиться что-то ужасное?</legend>
+          <label><input type="radio" name="gad7" value="0" required /> Совсем нет</label>
+          <label><input type="radio" name="gad7" value="1" /> Несколько дней</label>
+          <label><input type="radio" name="gad7" value="2" /> Более половины дней</label>
+          <label><input type="radio" name="gad7" value="3" /> Почти каждый день</label>
+        </fieldset>
+
+        <button class="button button-primary" type="submit">Показать результат</button>
+        <div class="gad-result" data-gad-result hidden></div>
+        <p class="form-note">
+          Если результат высокий или тревога мешает спать, работать, учиться или общаться, лучше обсудить состояние со специалистом.
+        </p>
       </form>
     </dialog>
 
