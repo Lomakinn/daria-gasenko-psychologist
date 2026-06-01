@@ -810,6 +810,15 @@ details p {
   background: var(--linen);
 }
 
+.gad-content {
+  display: grid;
+  gap: 15px;
+}
+
+.gad-content[hidden] {
+  display: none;
+}
+
 .test-dialog h2 {
   font-size: 30px;
 }
@@ -865,8 +874,10 @@ details p {
 
 .gad-result {
   display: grid;
-  gap: 12px;
-  padding: 18px;
+  gap: 16px;
+  min-height: 360px;
+  align-content: center;
+  padding: clamp(28px, 6vw, 56px);
   border: 1px solid rgba(111, 146, 125, 0.35);
   border-radius: var(--radius);
   background: rgba(111, 146, 125, 0.12);
@@ -878,8 +889,14 @@ details p {
 
 .gad-result strong {
   font-family: var(--serif);
-  font-size: 22px;
+  font-size: clamp(24px, 3vw, 34px);
   line-height: 1.25;
+}
+
+.gad-result h2 {
+  margin: 0;
+  font-size: clamp(48px, 10vw, 86px);
+  line-height: 0.95;
 }
 
 .gad-result p {
@@ -887,8 +904,21 @@ details p {
   color: var(--muted);
 }
 
-.gad-result .button {
+.gad-result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.gad-result-actions .button {
   width: fit-content;
+}
+
+.gad-result-actions .button-secondary {
+  border-color: var(--line);
+  background: var(--white);
+  color: var(--ink);
 }
 
 .gad-result-warning {
@@ -1030,7 +1060,11 @@ details p {
     grid-template-columns: 1fr;
   }
 
-  .gad-result .button {
+  .gad-result {
+    min-height: 420px;
+  }
+
+  .gad-result-actions .button {
     width: 100%;
   }
 }

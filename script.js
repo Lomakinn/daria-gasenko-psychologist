@@ -4,6 +4,7 @@ const testDialog = document.querySelector("[data-test-dialog]");
 const openTestButtons = document.querySelectorAll("[data-open-test]");
 const closeTestButton = document.querySelector("[data-close-test]");
 const gadForm = document.querySelector("[data-gad-form]");
+const gadContent = document.querySelector("[data-gad-content]");
 const gadResult = document.querySelector("[data-gad-result]");
 const contactForm = document.querySelector(".contact-form");
 const reviewsRoot = document.querySelector("[data-reviews]");
@@ -35,8 +36,12 @@ openTestButtons.forEach((button) => {
         gadResult.hidden = true;
         gadResult.textContent = "";
       }
+      if (gadContent) {
+        gadContent.hidden = false;
+      }
       if (gadForm) {
         gadForm.reset();
+        gadForm.scrollTop = 0;
       }
       lockPageScroll();
       testDialog.showModal();
@@ -108,19 +113,38 @@ if (gadForm && gadResult) {
 
     const total = scores.reduce((sum, value) => sum + Number(value), 0);
     const interpretation = getGadInterpretation(total);
+    if (gadContent) {
+      gadContent.hidden = true;
+    }
+    gadForm.scrollTop = 0;
     gadResult.hidden = false;
     gadResult.className = "gad-result";
     gadResult.innerHTML = `
-      <strong>${total} из 21 · ${interpretation.level}</strong>
+      <p class="eyebrow">Результат GAD-7</p>
+      <h2>${total} из 21</h2>
+      <strong>${interpretation.level}</strong>
       <p>${interpretation.text}</p>
-      <a class="button button-primary" href="#contact">Записаться на знакомство</a>
+      <div class="gad-result-actions">
+        <a class="button button-primary" href="#contact">Записаться на знакомство</a>
+        <button class="button button-secondary" type="button" data-restart-gad>Пройти заново</button>
+      </div>
     `;
-    gadResult.scrollIntoView({ behavior: "smooth", block: "nearest" });
   });
 
   gadResult.addEventListener("click", (event) => {
     if (event.target instanceof HTMLAnchorElement && testDialog instanceof HTMLDialogElement) {
       testDialog.close();
+      return;
+    }
+
+    if (event.target instanceof HTMLButtonElement && event.target.matches("[data-restart-gad]")) {
+      gadForm.reset();
+      gadResult.hidden = true;
+      gadResult.textContent = "";
+      if (gadContent) {
+        gadContent.hidden = false;
+      }
+      gadForm.scrollTop = 0;
     }
   });
 }
