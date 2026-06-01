@@ -66,6 +66,7 @@
             <button class="admin-tab is-active" type="button" data-tab-target="reviews">Отзывы</button>
             <button class="admin-tab" type="button" data-tab-target="users" data-admin-only>Пользователи</button>
             <button class="admin-tab" type="button" data-tab-target="requests" data-admin-only>Заявки</button>
+            <button class="admin-tab" type="button" data-tab-target="articles" data-admin-only>Статьи</button>
           </div>
 
           <section class="admin-panel is-active" data-tab-panel="reviews">
@@ -146,6 +147,17 @@
               <button class="button button-secondary" type="button" data-refresh-requests>Обновить</button>
             </div>
             <div class="admin-list" data-admin-requests></div>
+          </section>
+
+          <section class="admin-panel" data-tab-panel="articles" data-admin-only>
+            <div class="admin-section-heading">
+              <div>
+                <h2>БД статей</h2>
+                <p class="admin-lead">Карточки блока «Статьи» на главной подтягиваются из этой базы.</p>
+              </div>
+              <button class="button button-secondary" type="button" data-refresh-articles>Обновить</button>
+            </div>
+            <div class="admin-list" data-admin-articles></div>
           </section>
         </div>
       </section>

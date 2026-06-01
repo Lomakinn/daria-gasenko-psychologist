@@ -838,6 +838,12 @@ details p {
   color: var(--muted);
 }
 
+.admin-inline-link {
+  color: var(--terracotta-dark);
+  font-weight: 800;
+  text-decoration: none;
+}
+
 .admin-row-card {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;

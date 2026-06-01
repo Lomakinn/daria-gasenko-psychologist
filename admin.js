@@ -11,6 +11,7 @@ const userForm = document.querySelector("[data-user-form]");
 const userMessage = document.querySelector("[data-user-message]");
 const userList = document.querySelector("[data-admin-users]");
 const requestList = document.querySelector("[data-admin-requests]");
+const articleList = document.querySelector("[data-admin-articles]");
 const tabButtons = document.querySelectorAll("[data-tab-target]");
 const tabPanels = document.querySelectorAll("[data-tab-panel]");
 const adminOnlyElements = document.querySelectorAll("[data-admin-only]");
@@ -61,6 +62,7 @@ function showApp(user) {
   if (user.role === "admin") {
     loadUsers();
     loadRequests();
+    loadArticles();
   }
 }
 
@@ -161,6 +163,9 @@ function renderRequests(requests) {
       <p><b>Контакт:</b> ${escapeText(request.phone)}</p>
       <p><b>Формат:</b> ${escapeText(request.format || "Не указан")}</p>
       <p>${escapeText(request.message || "Без сообщения")}</p>
+      <div class="admin-actions">
+        <button class="button button-danger" type="button" data-request-delete="${request.id}">Удалить</button>
+      </div>
     `;
     requestList.append(card);
   });
@@ -170,6 +175,39 @@ async function loadRequests() {
   if (currentUser?.role !== "admin") return;
   const payload = await api("/api/admin/consultation-requests");
   renderRequests(payload.requests);
+}
+
+function renderArticles(articles) {
+  if (!articleList) return;
+  articleList.innerHTML = "";
+  if (!articles.length) {
+    articleList.innerHTML = '<p class="empty-state">Статей в базе пока нет.</p>';
+    return;
+  }
+
+  articles.forEach((article) => {
+    const card = document.createElement("article");
+    card.className = "admin-card";
+    card.innerHTML = `
+      <div class="admin-card-top">
+        <p class="tag">${escapeText(article.tag || "Статья")}</p>
+        <a class="admin-inline-link" href="${escapeText(article.href)}" target="_blank" rel="noreferrer">Открыть</a>
+      </div>
+      <strong>${escapeText(article.title)}</strong>
+      <p>${escapeText(article.excerpt || "")}</p>
+      <small>${escapeText(article.href)}</small>
+      <div class="admin-actions">
+        <button class="button button-danger" type="button" data-article-delete="${article.id}">Удалить</button>
+      </div>
+    `;
+    articleList.append(card);
+  });
+}
+
+async function loadArticles() {
+  if (currentUser?.role !== "admin") return;
+  const payload = await api("/api/admin/articles");
+  renderArticles(payload.articles);
 }
 
 loginForm?.addEventListener("submit", async (event) => {
@@ -259,8 +297,31 @@ userList?.addEventListener("click", async (event) => {
   }
 });
 
+requestList?.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-request-delete]");
+  if (!button) return;
+  try {
+    await api(`/api/admin/consultation-requests/${button.dataset.requestDelete}`, { method: "DELETE" });
+    loadRequests();
+  } catch (error) {
+    alert(error.message);
+  }
+});
+
+articleList?.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-article-delete]");
+  if (!button) return;
+  try {
+    await api(`/api/admin/articles/${button.dataset.articleDelete}`, { method: "DELETE" });
+    loadArticles();
+  } catch (error) {
+    alert(error.message);
+  }
+});
+
 document.querySelector("[data-refresh-reviews]")?.addEventListener("click", loadReviews);
 document.querySelector("[data-refresh-requests]")?.addEventListener("click", loadRequests);
+document.querySelector("[data-refresh-articles]")?.addEventListener("click", loadArticles);
 
 api("/api/auth/me")
   .then((payload) => {

@@ -68,9 +68,13 @@ async function readDb() {
   await ensureDb();
   const raw = await fs.readFile(DB_PATH, "utf8");
   const db = JSON.parse(raw);
+  if (await migrateDb(db)) {
+    await writeDb(db);
+  }
   db.users ||= [];
   db.sessions ||= [];
   db.reviews ||= [];
+  db.articles ||= [];
   db.consultationRequests ||= [];
   return db;
 }
@@ -83,6 +87,20 @@ async function ensureDb() {
     const seed = await fs.readFile(SEED_PATH, "utf8");
     await fs.writeFile(DB_PATH, seed, "utf8");
   }
+}
+
+async function readSeed() {
+  return JSON.parse(await fs.readFile(SEED_PATH, "utf8"));
+}
+
+async function migrateDb(db) {
+  const seed = await readSeed();
+  if ((db.schemaVersion || 1) >= seed.schemaVersion) return false;
+
+  db.schemaVersion = seed.schemaVersion;
+  db.reviews = Array.isArray(db.reviews) && db.reviews.length ? db.reviews : seed.reviews || [];
+  db.articles = Array.isArray(db.articles) && db.articles.length ? db.articles : seed.articles || [];
+  return true;
 }
 
 async function writeDb(db) {
@@ -133,6 +151,17 @@ function sanitizeReview(review) {
     createdAt: review.createdAt,
     moderatedAt: review.moderatedAt || null,
     moderatedBy: review.moderatedBy || null,
+  };
+}
+
+function sanitizeArticle(article) {
+  return {
+    id: article.id,
+    tag: article.tag,
+    title: article.title,
+    excerpt: article.excerpt,
+    href: article.href,
+    createdAt: article.createdAt,
   };
 }
 
@@ -219,6 +248,14 @@ async function handleApi(req, res, pathname) {
       .sort((a, b) => String(b.moderatedAt || b.createdAt).localeCompare(String(a.moderatedAt || a.createdAt)))
       .map(sanitizeReview);
     jsonResponse(res, 200, { reviews: approved });
+    return;
+  }
+
+  if (req.method === "GET" && pathname === "/api/articles") {
+    const articles = db.articles
+      .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)))
+      .map(sanitizeArticle);
+    jsonResponse(res, 200, { articles });
     return;
   }
 
@@ -339,6 +376,26 @@ async function handleApi(req, res, pathname) {
     return;
   }
 
+  if (req.method === "GET" && pathname === "/api/admin/articles") {
+    if (!requireAdmin(user, res)) return;
+    jsonResponse(res, 200, { articles: db.articles.map(sanitizeArticle) });
+    return;
+  }
+
+  const articleDeleteMatch = pathname.match(/^\/api\/admin\/articles\/([^/]+)$/);
+  if (req.method === "DELETE" && articleDeleteMatch) {
+    if (!requireAdmin(user, res)) return;
+    const before = db.articles.length;
+    db.articles = db.articles.filter((article) => article.id !== articleDeleteMatch[1]);
+    if (db.articles.length === before) {
+      jsonResponse(res, 404, { error: "Статья не найдена" });
+      return;
+    }
+    await writeDb(db);
+    jsonResponse(res, 200, { ok: true });
+    return;
+  }
+
   if (req.method === "POST" && pathname === "/api/consultation-requests") {
     const body = await readBody(req);
     const request = {
@@ -365,6 +422,20 @@ async function handleApi(req, res, pathname) {
   if (req.method === "GET" && pathname === "/api/admin/consultation-requests") {
     if (!requireAdmin(user, res)) return;
     jsonResponse(res, 200, { requests: db.consultationRequests });
+    return;
+  }
+
+  const requestDeleteMatch = pathname.match(/^\/api\/admin\/consultation-requests\/([^/]+)$/);
+  if (req.method === "DELETE" && requestDeleteMatch) {
+    if (!requireAdmin(user, res)) return;
+    const before = db.consultationRequests.length;
+    db.consultationRequests = db.consultationRequests.filter((request) => request.id !== requestDeleteMatch[1]);
+    if (db.consultationRequests.length === before) {
+      jsonResponse(res, 404, { error: "Заявка не найдена" });
+      return;
+    }
+    await writeDb(db);
+    jsonResponse(res, 200, { ok: true });
     return;
   }
 

@@ -12,6 +12,7 @@ const reviewTrack = document.querySelector("[data-reviews]");
 const reviewPrev = document.querySelector("[data-review-prev]");
 const reviewNext = document.querySelector("[data-review-next]");
 const reviewCounter = document.querySelector("[data-review-counter]");
+const blogRoot = document.querySelector("[data-blog]");
 let modalScrollY = 0;
 
 if (navToggle && nav) {
@@ -204,10 +205,9 @@ async function loadApprovedReviews() {
     if (!response.ok) return;
     const payload = await response.json();
     const reviews = Array.isArray(payload.reviews) ? payload.reviews : [];
-    reviewsRoot.querySelectorAll("[data-custom-review]").forEach((item) => item.remove());
+    reviewsRoot.innerHTML = "";
     reviews.forEach((review) => {
       const blockquote = document.createElement("blockquote");
-      blockquote.dataset.customReview = "true";
       blockquote.innerHTML = `
         <p>"${escapeText(review.text)}"</p>
         <cite>${escapeText(review.author || "Анонимно")}</cite>
@@ -255,4 +255,31 @@ function setupReviewCarousel() {
   loadApprovedReviews().finally(updateCarousel);
 }
 
+async function loadArticles() {
+  if (!blogRoot) return;
+
+  try {
+    const response = await fetch("/api/articles", { credentials: "same-origin" });
+    if (!response.ok) return;
+    const payload = await response.json();
+    const articles = Array.isArray(payload.articles) ? payload.articles : [];
+    blogRoot.innerHTML = "";
+    articles.forEach((article) => {
+      const card = document.createElement("a");
+      card.className = "blog-card";
+      card.href = article.href;
+      card.innerHTML = `
+        <p class="tag">${escapeText(article.tag || "Статья")}</p>
+        <h3>${escapeText(article.title)}</h3>
+        <p>${escapeText(article.excerpt || "")}</p>
+        <span class="read-more">Читать статью</span>
+      `;
+      blogRoot.append(card);
+    });
+  } catch {
+    // Static hosting without the backend leaves the section empty.
+  }
+}
+
 setupReviewCarousel();
+loadArticles();
