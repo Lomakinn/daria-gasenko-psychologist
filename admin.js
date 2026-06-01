@@ -1,75 +1,273 @@
-const REVIEW_STORAGE_KEY = "gasenkoReviews";
-const form = document.querySelector("[data-review-form]");
+const loginView = document.querySelector("[data-login-view]");
+const adminView = document.querySelector("[data-admin-view]");
+const loginForm = document.querySelector("[data-login-form]");
+const loginMessage = document.querySelector("[data-login-message]");
+const currentUserText = document.querySelector("[data-current-user]");
+const logoutButton = document.querySelector("[data-logout]");
+const reviewForm = document.querySelector("[data-review-form]");
+const reviewMessage = document.querySelector("[data-review-message]");
 const reviewList = document.querySelector("[data-admin-reviews]");
+const userForm = document.querySelector("[data-user-form]");
+const userMessage = document.querySelector("[data-user-message]");
+const userList = document.querySelector("[data-admin-users]");
+const requestList = document.querySelector("[data-admin-requests]");
+const tabButtons = document.querySelectorAll("[data-tab-target]");
+const tabPanels = document.querySelectorAll("[data-tab-panel]");
+const adminOnlyElements = document.querySelectorAll("[data-admin-only]");
+
+let currentUser = null;
 
 function escapeText(value) {
-  return String(value).replace(/[&<>"']/g, (char) => {
+  return String(value ?? "").replace(/[&<>"']/g, (char) => {
     const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
     return entities[char];
   });
 }
 
-function getReviews() {
-  try {
-    return JSON.parse(localStorage.getItem(REVIEW_STORAGE_KEY) || "[]");
-  } catch {
-    return [];
+async function api(path, options = {}) {
+  const response = await fetch(path, {
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+    ...options,
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload.error || "Ошибка запроса");
+  }
+  return payload;
+}
+
+function setMessage(element, text, isError = false) {
+  if (!element) return;
+  element.textContent = text;
+  element.classList.toggle("form-error", isError);
+}
+
+function showApp(user) {
+  currentUser = user;
+  loginView.hidden = true;
+  adminView.hidden = false;
+  currentUserText.textContent = `${user.username} · ${user.role === "admin" ? "админ" : "обычный юзер"}`;
+
+  adminOnlyElements.forEach((element) => {
+    element.hidden = user.role !== "admin";
+  });
+
+  if (user.role !== "admin") {
+    switchTab("reviews");
+  }
+
+  loadReviews();
+  if (user.role === "admin") {
+    loadUsers();
+    loadRequests();
   }
 }
 
-function saveReviews(reviews) {
-  localStorage.setItem(REVIEW_STORAGE_KEY, JSON.stringify(reviews));
+function showLogin() {
+  currentUser = null;
+  loginView.hidden = false;
+  adminView.hidden = true;
 }
 
-function renderReviews() {
-  const reviews = getReviews();
-  reviewList.innerHTML = "";
+function switchTab(name) {
+  tabButtons.forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.tabTarget === name);
+  });
+  tabPanels.forEach((panel) => {
+    panel.classList.toggle("is-active", panel.dataset.tabPanel === name);
+  });
+}
 
+function statusLabel(status) {
+  if (status === "approved") return "Опубликован";
+  if (status === "rejected") return "Отклонен";
+  return "На проверке";
+}
+
+function renderReviews(reviews) {
+  if (!reviewList) return;
+  reviewList.innerHTML = "";
   if (!reviews.length) {
-    reviewList.innerHTML = '<p class="empty-state">Пока нет отзывов, добавленных через админку.</p>';
+    reviewList.innerHTML = '<p class="empty-state">Отзывов в базе пока нет.</p>';
     return;
   }
 
   reviews.forEach((review) => {
     const card = document.createElement("article");
-    card.className = "admin-review-card";
+    card.className = "admin-card";
     card.innerHTML = `
-      <p class="tag">${escapeText(review.topic)}</p>
+      <div class="admin-card-top">
+        <p class="tag">${escapeText(review.topic || "Другое")}</p>
+        <span class="status-pill status-${escapeText(review.status)}">${statusLabel(review.status)}</span>
+      </div>
       <p>${escapeText(review.text)}</p>
-      <strong>${escapeText(review.author)}</strong>
-      <button class="button button-secondary admin-delete" type="button" data-id="${review.id}">Удалить</button>
+      <strong>${escapeText(review.author || "Анонимно")}</strong>
+      <small>${new Date(review.createdAt).toLocaleString("ru-RU")}</small>
+      <div class="admin-actions">
+        <button class="button button-primary" type="button" data-review-action="approve" data-id="${review.id}">Одобрить</button>
+        <button class="button button-secondary" type="button" data-review-action="reject" data-id="${review.id}">Отклонить</button>
+        <button class="button button-danger" type="button" data-review-action="delete" data-id="${review.id}">Удалить</button>
+      </div>
     `;
     reviewList.append(card);
   });
 }
 
-if (form) {
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const data = new FormData(form);
-    const review = {
-      id: crypto.randomUUID(),
-      author: String(data.get("author") || "").trim(),
-      topic: String(data.get("topic") || "Другое").trim(),
-      text: String(data.get("text") || "").trim(),
-      createdAt: new Date().toISOString(),
-    };
+async function loadReviews() {
+  const payload = await api("/api/admin/reviews");
+  renderReviews(payload.reviews);
+}
 
-    if (!review.author || !review.text) return;
-
-    saveReviews([review, ...getReviews()]);
-    form.reset();
-    renderReviews();
+function renderUsers(users) {
+  if (!userList) return;
+  userList.innerHTML = "";
+  users.forEach((user) => {
+    const card = document.createElement("article");
+    card.className = "admin-card admin-row-card";
+    card.innerHTML = `
+      <div>
+        <strong>${escapeText(user.username)}</strong>
+        <p>${user.role === "admin" ? "Админ" : "Обычный юзер"} · создан ${new Date(user.createdAt).toLocaleDateString("ru-RU")}</p>
+      </div>
+      <button class="button button-danger" type="button" data-user-delete="${user.id}" ${user.id === currentUser.id ? "disabled" : ""}>Удалить</button>
+    `;
+    userList.append(card);
   });
 }
 
-if (reviewList) {
-  reviewList.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-id]");
-    if (!button) return;
-    saveReviews(getReviews().filter((review) => review.id !== button.dataset.id));
-    renderReviews();
-  });
-
-  renderReviews();
+async function loadUsers() {
+  if (currentUser?.role !== "admin") return;
+  const payload = await api("/api/admin/users");
+  renderUsers(payload.users);
 }
+
+function renderRequests(requests) {
+  if (!requestList) return;
+  requestList.innerHTML = "";
+  if (!requests.length) {
+    requestList.innerHTML = '<p class="empty-state">Заявок пока нет.</p>';
+    return;
+  }
+
+  requests.forEach((request) => {
+    const card = document.createElement("article");
+    card.className = "admin-card";
+    card.innerHTML = `
+      <div class="admin-card-top">
+        <strong>${escapeText(request.name)}</strong>
+        <small>${new Date(request.createdAt).toLocaleString("ru-RU")}</small>
+      </div>
+      <p><b>Контакт:</b> ${escapeText(request.phone)}</p>
+      <p><b>Формат:</b> ${escapeText(request.format || "Не указан")}</p>
+      <p>${escapeText(request.message || "Без сообщения")}</p>
+    `;
+    requestList.append(card);
+  });
+}
+
+async function loadRequests() {
+  if (currentUser?.role !== "admin") return;
+  const payload = await api("/api/admin/consultation-requests");
+  renderRequests(payload.requests);
+}
+
+loginForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const data = Object.fromEntries(new FormData(loginForm));
+  try {
+    const payload = await api("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    setMessage(loginMessage, "");
+    showApp(payload.user);
+  } catch (error) {
+    setMessage(loginMessage, error.message, true);
+  }
+});
+
+logoutButton?.addEventListener("click", async () => {
+  await api("/api/auth/logout", { method: "POST" });
+  showLogin();
+});
+
+tabButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    if (button.hidden) return;
+    switchTab(button.dataset.tabTarget);
+  });
+});
+
+reviewForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const data = Object.fromEntries(new FormData(reviewForm));
+  try {
+    await api("/api/admin/reviews", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    reviewForm.reset();
+    setMessage(reviewMessage, "Отзыв отправлен на проверку.");
+    loadReviews();
+  } catch (error) {
+    setMessage(reviewMessage, error.message, true);
+  }
+});
+
+reviewList?.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-review-action]");
+  if (!button) return;
+  const id = button.dataset.id;
+  const action = button.dataset.reviewAction;
+  try {
+    if (action === "delete") {
+      await api(`/api/admin/reviews/${id}`, { method: "DELETE" });
+    } else {
+      await api(`/api/admin/reviews/${id}/${action}`, { method: "POST" });
+    }
+    loadReviews();
+  } catch (error) {
+    alert(error.message);
+  }
+});
+
+userForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const data = Object.fromEntries(new FormData(userForm));
+  try {
+    await api("/api/admin/users", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    userForm.reset();
+    setMessage(userMessage, "Пользователь добавлен.");
+    loadUsers();
+  } catch (error) {
+    setMessage(userMessage, error.message, true);
+  }
+});
+
+userList?.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-user-delete]");
+  if (!button || button.disabled) return;
+  try {
+    await api(`/api/admin/users/${button.dataset.userDelete}`, { method: "DELETE" });
+    loadUsers();
+  } catch (error) {
+    alert(error.message);
+  }
+});
+
+document.querySelector("[data-refresh-reviews]")?.addEventListener("click", loadReviews);
+document.querySelector("[data-refresh-requests]")?.addEventListener("click", loadRequests);
+
+api("/api/auth/me")
+  .then((payload) => {
+    if (payload.user) {
+      showApp(payload.user);
+    } else {
+      showLogin();
+    }
+  })
+  .catch(() => showLogin());

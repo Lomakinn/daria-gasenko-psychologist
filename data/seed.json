@@ -1,0 +1,15 @@
+{
+  "users": [
+    {
+      "id": "user-admin",
+      "username": "admin",
+      "role": "admin",
+      "passwordSalt": "ca3d798040af429470c6bf254c9a3fbb",
+      "passwordHash": "3d4af8af9138ef690c6f0ea8dfc11c0a3186b024d3cbc96107806b9488e95651",
+      "createdAt": "2026-06-01T00:00:00.000Z"
+    }
+  ],
+  "sessions": [],
+  "reviews": [],
+  "consultationRequests": []
+}

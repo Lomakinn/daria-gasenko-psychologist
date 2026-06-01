@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Админка отзывов | Дарья Гасенко</title>
+    <title>Админ-панель | Дарья Гасенко</title>
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -18,7 +19,7 @@
         <span class="brand-mark">ДГ</span>
         <span>
           <strong>Дарья Гасенко</strong>
-          <small>админка отзывов</small>
+          <small>админ-панель</small>
         </span>
       </a>
       <nav class="site-nav admin-nav">
@@ -28,48 +29,124 @@
     </header>
 
     <main class="admin-main">
-      <section class="section">
-        <div class="container admin-layout">
+      <section class="section" data-login-view hidden>
+        <div class="container admin-login-shell">
           <div>
-            <p class="eyebrow">Отзывы</p>
-            <h1>Добавление новых отзывов</h1>
-            <p class="admin-lead">
-              Эта админка сохраняет отзывы в текущем браузере. Для настоящего продакшена ее можно заменить серверной
-              панелью или CMS, но структура уже подготовлена: автор, тема, текст, публикация и удаление.
-            </p>
+            <p class="eyebrow">Вход</p>
+            <h1>Админ-панель сайта</h1>
+            <p class="admin-lead">Войдите, чтобы модерировать отзывы, управлять пользователями и смотреть заявки на консультацию.</p>
           </div>
-
-          <form class="contact-form review-admin-form" data-review-form>
+          <form class="contact-form" data-login-form>
             <label>
-              Автор или инициалы
-              <input type="text" name="author" placeholder="Например, К., 32 года" required />
+              Логин
+              <input type="text" name="username" autocomplete="username" value="admin" required />
             </label>
             <label>
-              Тема
-              <select name="topic">
-                <option>Выгорание</option>
-                <option>Отношения</option>
-                <option>Тревога и границы</option>
-                <option>Другое</option>
-              </select>
+              Пароль
+              <input type="password" name="password" autocomplete="current-password" value="admin" required />
             </label>
-            <label>
-              Текст отзыва
-              <textarea name="text" rows="7" placeholder="Добавьте обезличенный отзыв без чувствительных деталей" required></textarea>
-            </label>
-            <button class="button button-primary" type="submit">Добавить отзыв</button>
-            <p class="form-note">Отзывы появятся на главной странице в этом же браузере после добавления.</p>
+            <button class="button button-primary" type="submit">Войти</button>
+            <p class="form-note" data-login-message>Первый пользователь: admin / admin</p>
           </form>
         </div>
       </section>
 
-      <section class="section section-muted">
-        <div class="container">
-          <div class="section-heading align-left">
-            <p class="eyebrow">Список</p>
-            <h2>Опубликованные через админку</h2>
+      <section class="section" data-admin-view hidden>
+        <div class="container admin-dashboard">
+          <div class="admin-topline">
+            <div>
+              <p class="eyebrow">Управление</p>
+              <h1>Рабочая панель</h1>
+              <p class="admin-lead" data-current-user></p>
+            </div>
+            <button class="button button-secondary admin-logout" type="button" data-logout>Выйти</button>
           </div>
-          <div class="review-grid admin-review-grid" data-admin-reviews></div>
+
+          <div class="admin-tabs" role="tablist" aria-label="Разделы админ-панели">
+            <button class="admin-tab is-active" type="button" data-tab-target="reviews">Отзывы</button>
+            <button class="admin-tab" type="button" data-tab-target="users" data-admin-only>Пользователи</button>
+            <button class="admin-tab" type="button" data-tab-target="requests" data-admin-only>Заявки</button>
+          </div>
+
+          <section class="admin-panel is-active" data-tab-panel="reviews">
+            <div class="admin-layout">
+              <div>
+                <h2>Новый отзыв на проверку</h2>
+                <p class="admin-lead">
+                  Отзыв сначала попадает в статус «На проверке». На сайте он появится только после одобрения модератором.
+                </p>
+              </div>
+              <form class="contact-form review-admin-form" data-review-form>
+                <label>
+                  Автор или инициалы
+                  <input type="text" name="author" placeholder="Например, К., 32 года" required />
+                </label>
+                <label>
+                  Тема
+                  <select name="topic">
+                    <option>Выгорание</option>
+                    <option>Отношения</option>
+                    <option>Тревога и границы</option>
+                    <option>Другое</option>
+                  </select>
+                </label>
+                <label>
+                  Текст отзыва
+                  <textarea name="text" rows="7" placeholder="Добавьте обезличенный отзыв без чувствительных деталей" required></textarea>
+                </label>
+                <button class="button button-primary" type="submit">Отправить на проверку</button>
+                <p class="form-note" data-review-message></p>
+              </form>
+            </div>
+
+            <div class="admin-section-heading">
+              <h2>Отзывы в базе</h2>
+              <button class="button button-secondary" type="button" data-refresh-reviews>Обновить</button>
+            </div>
+            <div class="admin-list" data-admin-reviews></div>
+          </section>
+
+          <section class="admin-panel" data-tab-panel="users" data-admin-only>
+            <div class="admin-layout">
+              <div>
+                <h2>Пользователи и права</h2>
+                <p class="admin-lead">
+                  Обычный пользователь может модерировать отзывы. Админ может управлять пользователями, модерировать отзывы и смотреть заявки.
+                </p>
+              </div>
+              <form class="contact-form" data-user-form>
+                <label>
+                  Логин
+                  <input type="text" name="username" autocomplete="off" required />
+                </label>
+                <label>
+                  Пароль
+                  <input type="password" name="password" autocomplete="new-password" required />
+                </label>
+                <label>
+                  Права
+                  <select name="role">
+                    <option value="user">Обычный юзер</option>
+                    <option value="admin">Админ</option>
+                  </select>
+                </label>
+                <button class="button button-primary" type="submit">Добавить пользователя</button>
+                <p class="form-note" data-user-message></p>
+              </form>
+            </div>
+            <div class="admin-list" data-admin-users></div>
+          </section>
+
+          <section class="admin-panel" data-tab-panel="requests" data-admin-only>
+            <div class="admin-section-heading">
+              <div>
+                <h2>БД с запросами на консультацию</h2>
+                <p class="admin-lead">Сюда попадают заявки из формы на главной странице.</p>
+              </div>
+              <button class="button button-secondary" type="button" data-refresh-requests>Обновить</button>
+            </div>
+            <div class="admin-list" data-admin-requests></div>
+          </section>
         </div>
       </section>
     </main>

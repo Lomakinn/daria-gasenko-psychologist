@@ -12,7 +12,6 @@ const reviewTrack = document.querySelector("[data-reviews]");
 const reviewPrev = document.querySelector("[data-review-prev]");
 const reviewNext = document.querySelector("[data-review-next]");
 const reviewCounter = document.querySelector("[data-review-counter]");
-const REVIEW_STORAGE_KEY = "gasenkoReviews";
 let modalScrollY = 0;
 
 if (navToggle && nav) {
@@ -153,10 +152,36 @@ if (contactForm) {
   contactForm.addEventListener("submit", (event) => {
     event.preventDefault();
     const button = contactForm.querySelector("button[type='submit']");
+    const originalText = button?.textContent || "";
+    const data = Object.fromEntries(new FormData(contactForm));
+
     if (button) {
-      button.textContent = "Заявка подготовлена";
+      button.textContent = "Отправляем...";
       button.setAttribute("disabled", "true");
     }
+
+    fetch("/api/consultation-requests", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error("Request failed");
+        contactForm.reset();
+        if (button) button.textContent = "Заявка отправлена";
+      })
+      .catch(() => {
+        if (button) button.textContent = "Заявка подготовлена";
+      })
+      .finally(() => {
+        window.setTimeout(() => {
+          if (button) {
+            button.textContent = originalText;
+            button.removeAttribute("disabled");
+          }
+        }, 3000);
+      });
   });
 }
 
@@ -167,38 +192,40 @@ function escapeText(value) {
   });
 }
 
-function loadCustomReviews() {
-  try {
-    return JSON.parse(localStorage.getItem(REVIEW_STORAGE_KEY) || "[]");
-  } catch {
-    return [];
-  }
-}
-
-if (reviewsRoot) {
-  const customReviews = loadCustomReviews();
-  customReviews.forEach((review) => {
-    const blockquote = document.createElement("blockquote");
-    blockquote.dataset.customReview = "true";
-    blockquote.innerHTML = `
-      <p>"${escapeText(review.text)}"</p>
-      <cite>${escapeText(review.author || "Анонимно")}</cite>
-    `;
-    reviewsRoot.append(blockquote);
-  });
-}
-
 function getVisibleReviewCount() {
   return window.matchMedia("(max-width: 940px)").matches ? 1 : 3;
+}
+
+async function loadApprovedReviews() {
+  if (!reviewsRoot) return;
+
+  try {
+    const response = await fetch("/api/reviews", { credentials: "same-origin" });
+    if (!response.ok) return;
+    const payload = await response.json();
+    const reviews = Array.isArray(payload.reviews) ? payload.reviews : [];
+    reviewsRoot.querySelectorAll("[data-custom-review]").forEach((item) => item.remove());
+    reviews.forEach((review) => {
+      const blockquote = document.createElement("blockquote");
+      blockquote.dataset.customReview = "true";
+      blockquote.innerHTML = `
+        <p>"${escapeText(review.text)}"</p>
+        <cite>${escapeText(review.author || "Анонимно")}</cite>
+      `;
+      reviewsRoot.append(blockquote);
+    });
+  } catch {
+    // Static hosting without the backend keeps the base reviews visible.
+  }
 }
 
 function setupReviewCarousel() {
   if (!reviewTrack || !reviewPrev || !reviewNext || !reviewCounter) return;
 
-  const slides = Array.from(reviewTrack.querySelectorAll("blockquote"));
   let currentIndex = 0;
 
   function updateCarousel() {
+    const slides = Array.from(reviewTrack.querySelectorAll("blockquote"));
     const visibleCount = getVisibleReviewCount();
     const maxIndex = Math.max(0, slides.length - visibleCount);
     currentIndex = Math.min(currentIndex, maxIndex);
@@ -218,13 +245,14 @@ function setupReviewCarousel() {
   });
 
   reviewNext.addEventListener("click", () => {
+    const slides = Array.from(reviewTrack.querySelectorAll("blockquote"));
     const visibleCount = getVisibleReviewCount();
     currentIndex = Math.min(Math.max(0, slides.length - visibleCount), currentIndex + visibleCount);
     updateCarousel();
   });
 
   window.addEventListener("resize", updateCarousel);
-  updateCarousel();
+  loadApprovedReviews().finally(updateCarousel);
 }
 
 setupReviewCarousel();

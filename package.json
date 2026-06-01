@@ -1,0 +1,13 @@
+{
+  "name": "daria-gasenko-psychologist",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Landing page with a small backend for reviews, users, and consultation requests.",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
