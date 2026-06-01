@@ -144,7 +144,21 @@
                 <h2>БД с запросами на консультацию</h2>
                 <p class="admin-lead">Сюда попадают заявки из формы на главной странице.</p>
               </div>
-              <button class="button button-secondary" type="button" data-refresh-requests>Обновить</button>
+              <div class="admin-filter">
+                <label>
+                  Состояние
+                  <select data-request-status-filter>
+                    <option value="all">Все заявки</option>
+                    <option value="new">Новая</option>
+                    <option value="contacted">Связались</option>
+                    <option value="intro">Знакомство</option>
+                    <option value="paid">Конверсия в платного</option>
+                    <option value="rejected">Отказ</option>
+                    <option value="completed">Завершили работу</option>
+                  </select>
+                </label>
+                <button class="button button-secondary" type="button" data-refresh-requests>Обновить</button>
+              </div>
             </div>
             <div class="admin-list" data-admin-requests></div>
           </section>

@@ -11,12 +11,21 @@ const userForm = document.querySelector("[data-user-form]");
 const userMessage = document.querySelector("[data-user-message]");
 const userList = document.querySelector("[data-admin-users]");
 const requestList = document.querySelector("[data-admin-requests]");
+const requestStatusFilter = document.querySelector("[data-request-status-filter]");
 const articleList = document.querySelector("[data-admin-articles]");
 const tabButtons = document.querySelectorAll("[data-tab-target]");
 const tabPanels = document.querySelectorAll("[data-tab-panel]");
 const adminOnlyElements = document.querySelectorAll("[data-admin-only]");
 
 let currentUser = null;
+const requestStatusLabels = {
+  new: "Новая",
+  contacted: "Связались",
+  intro: "Знакомство",
+  paid: "Конверсия в платного",
+  rejected: "Отказ",
+  completed: "Завершили работу",
+};
 
 function escapeText(value) {
   return String(value ?? "").replace(/[&<>"']/g, (char) => {
@@ -157,12 +166,23 @@ function renderRequests(requests) {
     card.className = "admin-card";
     card.innerHTML = `
       <div class="admin-card-top">
-        <strong>${escapeText(request.name)}</strong>
+        <div>
+          <strong>${escapeText(request.name)}</strong>
+          <p class="status-pill status-request">${escapeText(requestStatusLabels[request.status] || requestStatusLabels.new)}</p>
+        </div>
         <small>${new Date(request.createdAt).toLocaleString("ru-RU")}</small>
       </div>
       <p><b>Контакт:</b> ${escapeText(request.phone)}</p>
       <p><b>Формат:</b> ${escapeText(request.format || "Не указан")}</p>
       <p>${escapeText(request.message || "Без сообщения")}</p>
+      <label class="admin-status-control">
+        Состояние заявки
+        <select data-request-status="${request.id}">
+          ${Object.entries(requestStatusLabels)
+            .map(([value, label]) => `<option value="${value}" ${request.status === value ? "selected" : ""}>${label}</option>`)
+            .join("")}
+        </select>
+      </label>
       <div class="admin-actions">
         <button class="button button-danger" type="button" data-request-delete="${request.id}">Удалить</button>
       </div>
@@ -173,7 +193,8 @@ function renderRequests(requests) {
 
 async function loadRequests() {
   if (currentUser?.role !== "admin") return;
-  const payload = await api("/api/admin/consultation-requests");
+  const status = requestStatusFilter?.value || "all";
+  const payload = await api(`/api/admin/consultation-requests?status=${encodeURIComponent(status)}`);
   renderRequests(payload.requests);
 }
 
@@ -308,6 +329,20 @@ requestList?.addEventListener("click", async (event) => {
   }
 });
 
+requestList?.addEventListener("change", async (event) => {
+  const select = event.target.closest("[data-request-status]");
+  if (!select) return;
+  try {
+    await api(`/api/admin/consultation-requests/${select.dataset.requestStatus}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status: select.value }),
+    });
+    loadRequests();
+  } catch (error) {
+    alert(error.message);
+  }
+});
+
 articleList?.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-article-delete]");
   if (!button) return;
@@ -322,6 +357,7 @@ articleList?.addEventListener("click", async (event) => {
 document.querySelector("[data-refresh-reviews]")?.addEventListener("click", loadReviews);
 document.querySelector("[data-refresh-requests]")?.addEventListener("click", loadRequests);
 document.querySelector("[data-refresh-articles]")?.addEventListener("click", loadArticles);
+requestStatusFilter?.addEventListener("change", loadRequests);
 
 api("/api/auth/me")
   .then((payload) => {

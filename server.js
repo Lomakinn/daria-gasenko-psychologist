@@ -9,6 +9,7 @@ const SEED_PATH = path.join(ROOT, "data", "seed.json");
 const PORT = Number(process.env.PORT || 4173);
 const HOST = process.env.HOST || "0.0.0.0";
 const SESSION_TTL_MS = 1000 * 60 * 60 * 12;
+const REQUEST_STATUSES = new Set(["new", "contacted", "intro", "paid", "rejected", "completed"]);
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -163,6 +164,22 @@ function sanitizeArticle(article) {
     href: article.href,
     createdAt: article.createdAt,
   };
+}
+
+function sanitizeRequest(request) {
+  return {
+    id: request.id,
+    name: request.name,
+    phone: request.phone,
+    format: request.format,
+    message: request.message,
+    createdAt: request.createdAt,
+    status: REQUEST_STATUSES.has(request.status) ? request.status : "new",
+  };
+}
+
+function normalizeRequestStatus(status) {
+  return REQUEST_STATUSES.has(status) ? status : "new";
 }
 
 async function getCurrentUser(req, db) {
@@ -421,7 +438,33 @@ async function handleApi(req, res, pathname) {
 
   if (req.method === "GET" && pathname === "/api/admin/consultation-requests") {
     if (!requireAdmin(user, res)) return;
-    jsonResponse(res, 200, { requests: db.consultationRequests });
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const status = url.searchParams.get("status");
+    const requests = db.consultationRequests
+      .map((request) => {
+        request.status = normalizeRequestStatus(request.status);
+        return request;
+      })
+      .filter((request) => !status || status === "all" || request.status === status)
+      .map(sanitizeRequest);
+    jsonResponse(res, 200, { requests });
+    return;
+  }
+
+  const requestStatusMatch = pathname.match(/^\/api\/admin\/consultation-requests\/([^/]+)\/status$/);
+  if (req.method === "PATCH" && requestStatusMatch) {
+    if (!requireAdmin(user, res)) return;
+    const body = await readBody(req);
+    const status = normalizeRequestStatus(String(body.status || ""));
+    const request = db.consultationRequests.find((item) => item.id === requestStatusMatch[1]);
+    if (!request) {
+      jsonResponse(res, 404, { error: "Заявка не найдена" });
+      return;
+    }
+    request.status = status;
+    request.updatedAt = now();
+    await writeDb(db);
+    jsonResponse(res, 200, { request: sanitizeRequest(request) });
     return;
   }
 

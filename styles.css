@@ -855,6 +855,34 @@ details p {
   gap: 10px;
 }
 
+.admin-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.admin-filter label,
+.admin-status-control {
+  display: grid;
+  gap: 7px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.admin-filter select,
+.admin-status-control select {
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--ink);
+  font: inherit;
+}
+
 .button-danger {
   min-height: 46px;
   padding: 11px 18px;
@@ -889,6 +917,12 @@ details p {
 .status-rejected {
   background: rgba(191, 101, 68, 0.12);
   color: var(--terracotta-dark);
+}
+
+.status-request {
+  margin-top: 8px;
+  background: rgba(111, 146, 125, 0.14);
+  color: var(--sage-dark);
 }
 
 .form-error {
