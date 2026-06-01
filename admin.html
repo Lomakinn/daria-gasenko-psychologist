@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Админка отзывов | Дарья Гасенко</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="admin-page">
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="Вернуться на сайт">
+        <span class="brand-mark">ДГ</span>
+        <span>
+          <strong>Дарья Гасенко</strong>
+          <small>админка отзывов</small>
+        </span>
+      </a>
+      <nav class="site-nav admin-nav">
+        <a href="index.html#reviews">Отзывы на сайте</a>
+        <a class="nav-cta" href="index.html">На главную</a>
+      </nav>
+    </header>
+
+    <main class="admin-main">
+      <section class="section">
+        <div class="container admin-layout">
+          <div>
+            <p class="eyebrow">Отзывы</p>
+            <h1>Добавление новых отзывов</h1>
+            <p class="admin-lead">
+              Эта админка сохраняет отзывы в текущем браузере. Для настоящего продакшена ее можно заменить серверной
+              панелью или CMS, но структура уже подготовлена: автор, тема, текст, публикация и удаление.
+            </p>
+          </div>
+
+          <form class="contact-form review-admin-form" data-review-form>
+            <label>
+              Автор или инициалы
+              <input type="text" name="author" placeholder="Например, К., 32 года" required />
+            </label>
+            <label>
+              Тема
+              <select name="topic">
+                <option>Выгорание</option>
+                <option>Отношения</option>
+                <option>Тревога и границы</option>
+                <option>Другое</option>
+              </select>
+            </label>
+            <label>
+              Текст отзыва
+              <textarea name="text" rows="7" placeholder="Добавьте обезличенный отзыв без чувствительных деталей" required></textarea>
+            </label>
+            <button class="button button-primary" type="submit">Добавить отзыв</button>
+            <p class="form-note">Отзывы появятся на главной странице в этом же браузере после добавления.</p>
+          </form>
+        </div>
+      </section>
+
+      <section class="section section-muted">
+        <div class="container">
+          <div class="section-heading align-left">
+            <p class="eyebrow">Список</p>
+            <h2>Опубликованные через админку</h2>
+          </div>
+          <div class="review-grid admin-review-grid" data-admin-reviews></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="admin.js"></script>
+  </body>
+</html>
