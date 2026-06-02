@@ -14,6 +14,15 @@ const reviewNext = document.querySelector("[data-review-next]");
 const reviewCounter = document.querySelector("[data-review-counter]");
 const blogRoot = document.querySelector("[data-blog]");
 let modalScrollY = 0;
+let csrfToken = "";
+
+async function getCsrfToken() {
+  if (csrfToken) return csrfToken;
+  const response = await fetch("/api/csrf", { credentials: "same-origin" });
+  const payload = await response.json();
+  csrfToken = payload.csrfToken || "";
+  return csrfToken;
+}
 
 if (navToggle && nav) {
   navToggle.addEventListener("click", () => {
@@ -161,12 +170,12 @@ if (contactForm) {
       button.setAttribute("disabled", "true");
     }
 
-    fetch("/api/consultation-requests", {
+    getCsrfToken().then((token) => fetch("/api/consultation-requests", {
       method: "POST",
       credentials: "same-origin",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-CSRF-Token": token },
       body: JSON.stringify(data),
-    })
+    }))
       .then((response) => {
         if (!response.ok) throw new Error("Request failed");
         contactForm.reset();

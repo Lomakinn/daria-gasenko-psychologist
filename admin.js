@@ -13,11 +13,13 @@ const userList = document.querySelector("[data-admin-users]");
 const requestList = document.querySelector("[data-admin-requests]");
 const requestStatusFilter = document.querySelector("[data-request-status-filter]");
 const articleList = document.querySelector("[data-admin-articles]");
+const auditList = document.querySelector("[data-admin-audit]");
 const tabButtons = document.querySelectorAll("[data-tab-target]");
 const tabPanels = document.querySelectorAll("[data-tab-panel]");
 const adminOnlyElements = document.querySelectorAll("[data-admin-only]");
 
 let currentUser = null;
+let csrfToken = "";
 
 const requestStatusLabels = {
   new: "Новая",
@@ -36,9 +38,19 @@ function escapeText(value) {
 }
 
 async function api(path, options = {}) {
+  const method = options.method || "GET";
+  if (method !== "GET" && !csrfToken) {
+    const response = await fetch("/api/csrf", { credentials: "same-origin" });
+    const payload = await response.json();
+    csrfToken = payload.csrfToken || "";
+  }
   const response = await fetch(path, {
     credentials: "same-origin",
-    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+    headers: {
+      "Content-Type": "application/json",
+      ...(method !== "GET" ? { "X-CSRF-Token": csrfToken } : {}),
+      ...(options.headers || {}),
+    },
     ...options,
   });
   const payload = await response.json().catch(() => ({}));
@@ -73,6 +85,7 @@ function showApp(user) {
     loadUsers();
     loadRequests();
     loadArticles();
+    loadAudit();
   }
 }
 
@@ -254,6 +267,35 @@ async function loadArticles() {
   renderArticles(payload.articles);
 }
 
+function renderAudit(logs) {
+  if (!auditList) return;
+  auditList.innerHTML = "";
+  if (!logs.length) {
+    auditList.innerHTML = '<p class="empty-state">Событий пока нет.</p>';
+    return;
+  }
+  logs.forEach((log) => {
+    const card = document.createElement("article");
+    card.className = "admin-card";
+    card.innerHTML = `
+      <div class="admin-card-top">
+        <strong>${escapeText(log.action)} · ${escapeText(log.entity_type)}</strong>
+        <small>${new Date(log.created_at).toLocaleString("ru-RU")}</small>
+      </div>
+      <p><b>ID:</b> ${escapeText(log.entity_id || "—")}</p>
+      <p><b>User:</b> ${escapeText(log.user_id || "public")}</p>
+      <p><b>IP:</b> ${escapeText(log.ip || "—")}</p>
+    `;
+    auditList.append(card);
+  });
+}
+
+async function loadAudit() {
+  if (currentUser?.role !== "admin") return;
+  const payload = await api("/api/admin/audit");
+  renderAudit(payload.logs || []);
+}
+
 loginForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   const data = Object.fromEntries(new FormData(loginForm));
@@ -304,6 +346,7 @@ reviewList?.addEventListener("click", async (event) => {
   const action = button.dataset.reviewAction;
   try {
     if (action === "delete") {
+      if (!confirm("Удалить отзыв?")) return;
       await api(`/api/admin/reviews/${id}`, { method: "DELETE" });
     } else {
       await api(`/api/admin/reviews/${id}/${action}`, { method: "POST" });
@@ -335,6 +378,7 @@ userList?.addEventListener("click", async (event) => {
   const saveButton = event.target.closest("[data-user-save]");
 
   if (deleteButton && !deleteButton.disabled) {
+    if (!confirm("Удалить пользователя?")) return;
     try {
       await api(`/api/admin/users/${deleteButton.dataset.userDelete}`, { method: "DELETE" });
       loadUsers();
@@ -364,6 +408,7 @@ userList?.addEventListener("click", async (event) => {
 requestList?.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-request-delete]");
   if (!button) return;
+  if (!confirm("Удалить заявку?")) return;
   try {
     await api(`/api/admin/consultation-requests/${button.dataset.requestDelete}`, { method: "DELETE" });
     loadRequests();
@@ -389,6 +434,7 @@ requestList?.addEventListener("change", async (event) => {
 articleList?.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-article-delete]");
   if (!button) return;
+  if (!confirm("Удалить статью из базы?")) return;
   try {
     await api(`/api/admin/articles/${button.dataset.articleDelete}`, { method: "DELETE" });
     loadArticles();
@@ -400,6 +446,7 @@ articleList?.addEventListener("click", async (event) => {
 document.querySelector("[data-refresh-reviews]")?.addEventListener("click", loadReviews);
 document.querySelector("[data-refresh-requests]")?.addEventListener("click", loadRequests);
 document.querySelector("[data-refresh-articles]")?.addEventListener("click", loadArticles);
+document.querySelector("[data-refresh-audit]")?.addEventListener("click", loadAudit);
 requestStatusFilter?.addEventListener("change", loadRequests);
 
 api("/api/auth/me")

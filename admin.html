@@ -67,6 +67,7 @@
             <button class="admin-tab" type="button" data-tab-target="users" data-admin-only>Пользователи</button>
             <button class="admin-tab" type="button" data-tab-target="requests" data-admin-only>Заявки</button>
             <button class="admin-tab" type="button" data-tab-target="articles" data-admin-only>Статьи</button>
+            <button class="admin-tab" type="button" data-tab-target="audit" data-admin-only>Аудит</button>
           </div>
 
           <section class="admin-panel is-active" data-tab-panel="reviews">
@@ -122,7 +123,7 @@
                 </label>
                 <label>
                   Пароль
-                  <input type="password" name="password" autocomplete="new-password" required />
+                  <input type="password" name="password" autocomplete="new-password" minlength="10" required />
                 </label>
                 <label>
                   Права
@@ -172,6 +173,17 @@
               <button class="button button-secondary" type="button" data-refresh-articles>Обновить</button>
             </div>
             <div class="admin-list" data-admin-articles></div>
+          </section>
+
+          <section class="admin-panel" data-tab-panel="audit" data-admin-only>
+            <div class="admin-section-heading">
+              <div>
+                <h2>Журнал безопасности</h2>
+                <p class="admin-lead">Последние действия пользователей и публичные заявки.</p>
+              </div>
+              <button class="button button-secondary" type="button" data-refresh-audit>Обновить</button>
+            </div>
+            <div class="admin-list" data-admin-audit></div>
           </section>
         </div>
       </section>
