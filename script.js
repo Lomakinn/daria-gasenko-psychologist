@@ -7,6 +7,7 @@ const gadForm = document.querySelector("[data-gad-form]");
 const gadContent = document.querySelector("[data-gad-content]");
 const gadResult = document.querySelector("[data-gad-result]");
 const contactForm = document.querySelector(".contact-form");
+const contactSuccess = document.querySelector("[data-contact-success]");
 const reviewsRoot = document.querySelector("[data-reviews]");
 const reviewTrack = document.querySelector("[data-reviews]");
 const reviewPrev = document.querySelector("[data-review-prev]");
@@ -162,13 +163,13 @@ if (contactForm) {
   contactForm.addEventListener("submit", (event) => {
     event.preventDefault();
     const button = contactForm.querySelector("button[type='submit']");
+    const controls = Array.from(contactForm.querySelectorAll("input, select, textarea, button"));
     const originalText = button?.textContent || "";
     const data = Object.fromEntries(new FormData(contactForm));
 
-    if (button) {
-      button.textContent = "Отправляем...";
-      button.setAttribute("disabled", "true");
-    }
+    contactForm.classList.add("is-submitting");
+    controls.forEach((control) => control.setAttribute("disabled", "true"));
+    if (button) button.textContent = "Отправляем...";
 
     getCsrfToken().then((token) => fetch("/api/consultation-requests", {
       method: "POST",
@@ -179,18 +180,25 @@ if (contactForm) {
       .then((response) => {
         if (!response.ok) throw new Error("Request failed");
         contactForm.reset();
+        contactForm.classList.remove("is-submitting");
+        contactForm.classList.add("is-success");
+        if (contactSuccess) contactSuccess.hidden = false;
         if (button) button.textContent = "Заявка отправлена";
       })
       .catch(() => {
+        contactForm.classList.remove("is-submitting");
         if (button) button.textContent = "Заявка подготовлена";
+        controls.forEach((control) => control.removeAttribute("disabled"));
       })
       .finally(() => {
         window.setTimeout(() => {
+          contactForm.classList.remove("is-success");
+          if (contactSuccess) contactSuccess.hidden = true;
+          controls.forEach((control) => control.removeAttribute("disabled"));
           if (button) {
             button.textContent = originalText;
-            button.removeAttribute("disabled");
           }
-        }, 3000);
+        }, 3600);
       });
   });
 }
