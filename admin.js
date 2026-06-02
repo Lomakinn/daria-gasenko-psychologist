@@ -18,6 +18,7 @@ const tabPanels = document.querySelectorAll("[data-tab-panel]");
 const adminOnlyElements = document.querySelectorAll("[data-admin-only]");
 
 let currentUser = null;
+
 const requestStatusLabels = {
   new: "Новая",
   contacted: "Связались",
@@ -135,13 +136,34 @@ function renderUsers(users) {
   userList.innerHTML = "";
   users.forEach((user) => {
     const card = document.createElement("article");
-    card.className = "admin-card admin-row-card";
+    card.className = "admin-card";
     card.innerHTML = `
-      <div>
+      <div class="admin-card-top">
         <strong>${escapeText(user.username)}</strong>
-        <p>${user.role === "admin" ? "Админ" : "Обычный юзер"} · создан ${new Date(user.createdAt).toLocaleDateString("ru-RU")}</p>
+        <span class="status-pill">${user.role === "admin" ? "Админ" : "Обычный юзер"}</span>
       </div>
-      <button class="button button-danger" type="button" data-user-delete="${user.id}" ${user.id === currentUser.id ? "disabled" : ""}>Удалить</button>
+      <p>Создан ${new Date(user.createdAt).toLocaleDateString("ru-RU")}</p>
+      <div class="admin-edit-grid">
+        <label>
+          Ник
+          <input type="text" value="${escapeText(user.username)}" data-user-username="${user.id}" />
+        </label>
+        <label>
+          Новый пароль
+          <input type="password" placeholder="Оставьте пустым, если без изменений" data-user-password="${user.id}" />
+        </label>
+        <label>
+          Права
+          <select data-user-role="${user.id}">
+            <option value="user" ${user.role === "user" ? "selected" : ""}>Обычный юзер</option>
+            <option value="admin" ${user.role === "admin" ? "selected" : ""}>Админ</option>
+          </select>
+        </label>
+      </div>
+      <div class="admin-actions">
+        <button class="button button-primary" type="button" data-user-save="${user.id}">Сохранить</button>
+        <button class="button button-danger" type="button" data-user-delete="${user.id}" ${user.id === currentUser.id ? "disabled" : ""}>Удалить</button>
+      </div>
     `;
     userList.append(card);
   });
@@ -162,13 +184,14 @@ function renderRequests(requests) {
   }
 
   requests.forEach((request) => {
+    const status = request.status || "new";
     const card = document.createElement("article");
     card.className = "admin-card";
     card.innerHTML = `
       <div class="admin-card-top">
         <div>
           <strong>${escapeText(request.name)}</strong>
-          <p class="status-pill status-request">${escapeText(requestStatusLabels[request.status] || requestStatusLabels.new)}</p>
+          <p class="status-pill status-request status-request-${escapeText(status)}">${escapeText(requestStatusLabels[status] || requestStatusLabels.new)}</p>
         </div>
         <small>${new Date(request.createdAt).toLocaleString("ru-RU")}</small>
       </div>
@@ -179,7 +202,7 @@ function renderRequests(requests) {
         Состояние заявки
         <select data-request-status="${request.id}">
           ${Object.entries(requestStatusLabels)
-            .map(([value, label]) => `<option value="${value}" ${request.status === value ? "selected" : ""}>${label}</option>`)
+            .map(([value, label]) => `<option value="${value}" ${status === value ? "selected" : ""}>${label}</option>`)
             .join("")}
         </select>
       </label>
@@ -308,13 +331,33 @@ userForm?.addEventListener("submit", async (event) => {
 });
 
 userList?.addEventListener("click", async (event) => {
-  const button = event.target.closest("[data-user-delete]");
-  if (!button || button.disabled) return;
-  try {
-    await api(`/api/admin/users/${button.dataset.userDelete}`, { method: "DELETE" });
-    loadUsers();
-  } catch (error) {
-    alert(error.message);
+  const deleteButton = event.target.closest("[data-user-delete]");
+  const saveButton = event.target.closest("[data-user-save]");
+
+  if (deleteButton && !deleteButton.disabled) {
+    try {
+      await api(`/api/admin/users/${deleteButton.dataset.userDelete}`, { method: "DELETE" });
+      loadUsers();
+    } catch (error) {
+      alert(error.message);
+    }
+    return;
+  }
+
+  if (saveButton) {
+    const id = saveButton.dataset.userSave;
+    const username = userList.querySelector(`[data-user-username="${CSS.escape(id)}"]`)?.value || "";
+    const password = userList.querySelector(`[data-user-password="${CSS.escape(id)}"]`)?.value || "";
+    const role = userList.querySelector(`[data-user-role="${CSS.escape(id)}"]`)?.value || "user";
+    try {
+      await api(`/api/admin/users/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ username, password, role }),
+      });
+      loadUsers();
+    } catch (error) {
+      alert(error.message);
+    }
   }
 });
 

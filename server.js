@@ -9,6 +9,7 @@ const SEED_PATH = path.join(ROOT, "data", "seed.json");
 const PORT = Number(process.env.PORT || 4173);
 const HOST = process.env.HOST || "0.0.0.0";
 const SESSION_TTL_MS = 1000 * 60 * 60 * 12;
+const PASSWORD_ITERATIONS = 310000;
 const REQUEST_STATUSES = new Set(["new", "contacted", "intro", "paid", "rejected", "completed"]);
 
 const MIME_TYPES = {
@@ -119,14 +120,18 @@ function publicUser(user) {
 }
 
 function hashPassword(password, salt = crypto.randomBytes(16).toString("hex")) {
+  const iterations = PASSWORD_ITERATIONS;
   return {
     salt,
-    hash: crypto.pbkdf2Sync(password, salt, 120000, 32, "sha256").toString("hex"),
+    hash: crypto.pbkdf2Sync(password, salt, iterations, 32, "sha256").toString("hex"),
+    iterations,
+    algorithm: "pbkdf2-sha256",
   };
 }
 
 function verifyPassword(password, user) {
-  const { hash } = hashPassword(password, user.passwordSalt);
+  const iterations = user.passwordIterations || 120000;
+  const hash = crypto.pbkdf2Sync(password, user.passwordSalt, iterations, 32, "sha256").toString("hex");
   return crypto.timingSafeEqual(Buffer.from(hash, "hex"), Buffer.from(user.passwordHash, "hex"));
 }
 
@@ -370,11 +375,65 @@ async function handleApi(req, res, pathname) {
       role,
       passwordSalt: passwordData.salt,
       passwordHash: passwordData.hash,
+      passwordIterations: passwordData.iterations,
+      passwordAlgorithm: passwordData.algorithm,
       createdAt: now(),
     };
     db.users.push(created);
     await writeDb(db);
     jsonResponse(res, 201, { user: publicUser(created) });
+    return;
+  }
+
+  const userUpdateMatch = pathname.match(/^\/api\/admin\/users\/([^/]+)$/);
+  if (req.method === "PUT" && userUpdateMatch) {
+    if (!requireAdmin(user, res)) return;
+    const id = userUpdateMatch[1];
+    const body = await readBody(req);
+    const target = db.users.find((item) => item.id === id);
+    if (!target) {
+      jsonResponse(res, 404, { error: "Пользователь не найден" });
+      return;
+    }
+
+    const username = String(body.username || "").trim();
+    const role = validateRole(body.role);
+    const password = String(body.password || "");
+
+    if (!username) {
+      jsonResponse(res, 400, { error: "Логин не может быть пустым" });
+      return;
+    }
+
+    if (db.users.some((item) => item.id !== id && item.username === username)) {
+      jsonResponse(res, 409, { error: "Пользователь с таким логином уже есть" });
+      return;
+    }
+
+    if (id === user.id && role !== "admin") {
+      jsonResponse(res, 400, { error: "Нельзя снять права администратора с текущего пользователя" });
+      return;
+    }
+
+    if (password && password.length < 4) {
+      jsonResponse(res, 400, { error: "Пароль должен быть минимум 4 символа" });
+      return;
+    }
+
+    target.username = username;
+    target.role = role;
+    target.updatedAt = now();
+    if (password) {
+      const passwordData = hashPassword(password);
+      target.passwordSalt = passwordData.salt;
+      target.passwordHash = passwordData.hash;
+      target.passwordIterations = passwordData.iterations;
+      target.passwordAlgorithm = passwordData.algorithm;
+      db.sessions = db.sessions.filter((session) => session.userId !== id || id === user.id);
+    }
+
+    await writeDb(db);
+    jsonResponse(res, 200, { user: publicUser(target) });
     return;
   }
 

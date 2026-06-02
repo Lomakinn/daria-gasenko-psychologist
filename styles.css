@@ -822,6 +822,11 @@ details p {
   gap: 16px;
 }
 
+.admin-list[data-admin-reviews] {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  align-items: stretch;
+}
+
 .admin-card {
   display: grid;
   gap: 12px;
@@ -853,6 +858,32 @@ details p {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+.admin-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-edit-grid label {
+  display: grid;
+  gap: 7px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.admin-edit-grid input,
+.admin-edit-grid select {
+  min-height: 44px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--ink);
+  font: inherit;
 }
 
 .admin-filter {
@@ -923,6 +954,36 @@ details p {
   margin-top: 8px;
   background: rgba(111, 146, 125, 0.14);
   color: var(--sage-dark);
+}
+
+.status-request-new {
+  background: rgba(78, 113, 142, 0.15);
+  color: #244b68;
+}
+
+.status-request-contacted {
+  background: rgba(191, 101, 68, 0.14);
+  color: var(--terracotta-dark);
+}
+
+.status-request-intro {
+  background: rgba(184, 142, 73, 0.18);
+  color: #75521d;
+}
+
+.status-request-paid {
+  background: rgba(111, 146, 125, 0.2);
+  color: var(--sage-dark);
+}
+
+.status-request-rejected {
+  background: rgba(127, 127, 127, 0.16);
+  color: #555;
+}
+
+.status-request-completed {
+  background: rgba(18, 56, 72, 0.14);
+  color: var(--deep);
 }
 
 .form-error {
@@ -1242,6 +1303,10 @@ details p {
   .admin-card-top,
   .admin-row-card {
     display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .admin-edit-grid {
     grid-template-columns: 1fr;
   }
 
